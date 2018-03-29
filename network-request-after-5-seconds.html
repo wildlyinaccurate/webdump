@@ -8,6 +8,8 @@
 	<p>The content of the response is: <span id="response">...</span></p>
 
 	<script>
+		setInterval(() => console.log('Waiting...'), 1000)
+
 		setTimeout(() => {
 			fetch('bananas.txt')
 				.then(res => res.text())
