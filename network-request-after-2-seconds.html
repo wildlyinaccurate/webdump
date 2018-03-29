@@ -9,7 +9,7 @@
 
 	<script>
 		setTimeout(() => {
-			fetch('/bananas.txt')
+			fetch('bananas.txt')
 				.then(res => res.text())
 				.then(text => document.getElementById('response').innerText = text)
 		}, 2000)
