@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>This page will make an HTTP request after 3 seconds</title>
+</head>
+<body>
+	<p>The content of the response is: <span id="response">..</span></p>
+
+	<script>
+		const ele = document.getElementById('response')
+		const int = setInterval(() => ele.innerText += '.', 500)
+
+		setTimeout(() => {
+			fetch('bananas.txt')
+				.then(res => res.text())
+				.then(text => ele.innerText = text)
+				.then(() => clearInterval(int))
+		}, 3000)
+	</script>
+</body>
+</html>
