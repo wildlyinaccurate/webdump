@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>CORS test</title>
+</head>
+<body>
+	<h2>fetch() response</h2>
+	<p>CORS prevents the browser from sending the authentication cookie, so we get a 302 to the home page</p>
+	<pre id="fetch"></pre>
+
+	<h2>JSONP response</h2>
+	<p>Thanks for all your tasty data!</p>
+	<pre id="jsonp"></pre>
+
+	<script>
+		function onData(data) {
+			document.getElementById('jsonp').innerHTML = JSON.stringify(data, null, 4)
+		}
+
+		fetch('https://speedcurve.com/speedcurve/speedcurve/favorite-data/?d=3&de=1&ds=1&stat=median&o=%5B%7B%22chart_id%22%3A%22topcustom%22%2C%22title%22%3A%22CUSTOM%20METRICS%22%2C%22metric%22%3A%5B%7B%22metric%22%3A%22TopCustom%22%7D%5D%2C%22stat%22%3A50%7D%5D')
+			.then(res => res.json())
+			.catch(e => document.getElementById('fetch').innerHTML = e)
+	</script>
+	<script src="https://speedcurve.com/speedcurve/speedcurve/favorite-data/?d=3&de=1&ds=1&stat=median&o=%5B%7B%22chart_id%22%3A%22topcustom%22%2C%22title%22%3A%22CUSTOM%20METRICS%22%2C%22metric%22%3A%5B%7B%22metric%22%3A%22TopCustom%22%7D%5D%2C%22stat%22%3A50%7D%5D&jsonp=onData"></script>
+</body>
+</html>
