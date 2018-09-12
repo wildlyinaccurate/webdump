@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>User Timing Test</title>
+</head>
+<body>
+	<script>
+		performance.mark('foo::bar')
+		performance.mark('foo/bar')
+		performance.mark('foo "bar"')
+		performance.mark('foo <bar>')
+		performance.mark('foo bar />')
+		performance.mark('>>/><!-- foo bar -->')
+
+		p = document.createElement('p')
+		p.innerText = 'henlo'
+		document.body.appendChild(p)
+	</script>
+</body>
+</html>
