@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DCLS Test</title>
+    <style>
+        body {
+            width: 400px;
+        }
+
+        button {
+            margin: 8px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <p>Document cumulative score: <b id="dcls">0.00</b></p>
+    <p>Time-based score: <b id="time-based">0.00</b></p>
+
+    <button>Beez</button>
+    <button>Olip</button>
+    <button>Shle</button>
+    <button>Vang</button>
+    <button>Yott</button>
+    <button>Taro</button>
+    <button>Cart</button>
+    <button>Boxo</button>
+    <button>Miff</button>
+    <button>Oblo</button>
+
+    <script>
+        const buttons = [...document.querySelectorAll('button')]
+
+        buttons.forEach((b, i) => {
+            const nextDelay = (i + 1) * 20
+            setTimeout(() => {
+                b.style.fontSize = '48px'
+            }, nextDelay)
+        })
+
+        setTimeout(() => {
+            buttons.forEach(b => {
+                b.style.marginLeft = Math.ceil(Math.random() * 200) + 'px'
+            })
+        }, 1000)
+
+        let DCLS = 0
+        const sliceSize = 100
+        const timeSlices = {}
+
+        new PerformanceObserver(list => {
+            list.getEntries().forEach(entry => {
+                // Cumulative score: each entry has the same weight
+                DCLS += entry.value
+                document.getElementById('dcls').innerText = DCLS.toFixed(2)
+
+                // Time-based score: entries are put into 100ms buckets, and the
+                // maximum value from each bucket is used.
+                const bucket = entry.startTime - entry.startTime % sliceSize
+                if (!timeSlices[bucket]) timeSlices[bucket] = []
+                timeSlices[bucket].push(entry.value)
+                const TBLS = Object.values(timeSlices).reduce((acc, vals) => acc + Math.max.apply(null, vals), 0)
+                document.getElementById('time-based').innerText = TBLS.toFixed(2)
+            });
+        }).observe({ entryTypes: ['layoutShift'] });
+    </script>
+</body>
+</html>
