@@ -11,9 +11,6 @@
     <ul id="tasks"></ul>
 
     <script>
-        const firstObserver = new PerformanceObserver(() => {});
-        firstObserver.observe({ type: "longtask" });
-
         function calculatePrimes(start, max) {
             const sieve = [];
 
@@ -29,6 +26,9 @@
         calculatePrimes(0, 20000000);
 
         document.getElementById("status").innerText = "Done";
+
+        const firstObserver = new PerformanceObserver(() => {});
+        firstObserver.observe({ type: "longtask" });
     </script>
 
     <script>
