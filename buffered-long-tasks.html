@@ -1,0 +1,43 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buffered Long Task</title>
+</head>
+<body>
+    <p>Status: <b id="status">Working...</b></p>
+    <p>Long Tasks:</p>
+    <ul id="tasks"></ul>
+
+    <script>
+        function calculatePrimes(start, max) {
+            const sieve = [];
+
+            for (let i = Math.max(start, 2); i <= max; ++i) {
+                if (!sieve[i]) {
+                    for (let j = i << 1; j <= max; j += i) {
+                        sieve[j] = true;
+                    }
+                }
+            }
+        }
+
+        calculatePrimes(0, 20000000);
+
+        document.getElementById("status").innerText = "Done";
+    </script>
+
+    <script>
+        const observer = new PerformanceObserver(function (list) {
+            for (const entry of list.getEntries()) {
+                const li = document.createElement("li");
+                li.innerText = JSON.stringify(entry);
+                document.getElementById("tasks").appendChild(li);
+            }
+        });
+
+        // This _should_ include long tasks that have already occurred.
+        observer.observe({ type: "longtask", buffered: true });
+    </script>
+</body>
+</html>
