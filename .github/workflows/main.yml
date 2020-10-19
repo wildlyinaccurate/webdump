@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  perf_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        
+      - id: netlify-deploy
+        uses: nwtgck/actions-netlify@v1.1
+        with:
+          publish-dir: '.'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
+
+      - uses: SpeedCurve-Metrics/speedcurve-test-action@v1
+        with:
+          api_key: ${{ secrets.SPEEDCURVE_API_KEY }}
+          site_id: 335016
+          replace_origin: ${{ steps.netlify-deploy.outputs.deploy-url }}
