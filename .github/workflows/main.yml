@@ -20,7 +20,7 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 1
 
-      - uses: SpeedCurve-Metrics/speedcurve-test-action@v1.2.0
+      - uses: SpeedCurve-Metrics/speedcurve-test-action@v1
         with:
           api_key: ${{ secrets.SPEEDCURVE_API_KEY }}
           site_id: 335016
