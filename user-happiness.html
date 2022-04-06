@@ -65,15 +65,15 @@
         const activeInfo = document.querySelector(".active-info");
         const seed = Math.max(0.3, Math.random());
 
-        addRow("First Contentful Paint", getData(dataSize, 0.49));
-        addRow("Start Render", getData(dataSize, 0.54));
-        addRow("DOM Content Loaded", getData(dataSize, 0.67));
-        addRow("Page Load", getData(dataSize, 0.6));
-        addRow("First Input Delay", getData(dataSize, 0.83));
-        addRow("Longest Long Task", getData(dataSize, 0.85));
-        addRow("First CPU Idle", getData(dataSize, 0.85));
-        addRow("Page Not Abandoned", getData(dataSize, 0.88));
-        addRow("Total CPU Time", getData(dataSize, 0.9));
+        addRow("First Contentful Paint", getData(dataSize, 0.54));
+        addRow("Start Render", getData(dataSize, 0.59));
+        addRow("DOM Content Loaded", getData(dataSize, 0.72));
+        addRow("Page Load", getData(dataSize, 0.65));
+        addRow("First Input Delay", getData(dataSize, 0.88));
+        addRow("Longest Long Task", getData(dataSize, 0.9));
+        addRow("First CPU Idle", getData(dataSize, 0.9));
+        addRow("Page Not Abandoned", getData(dataSize, 0.93));
+        addRow("Total CPU Time", getData(dataSize, 0.95));
 
         tbody.addEventListener("mouseover", (e) => {
             if (e.target.classList.contains("value")) {
