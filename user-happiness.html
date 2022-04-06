@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>User Happiness Visualisation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+
+        table {
+            border-spacing: 1px;
+        }
+
+        .label {
+            font-weight: bold;
+            padding-right: 1rem;
+        }
+
+        .value {
+            border: 2px solid transparent;
+            color: transparent;
+            font-size: 0;
+            padding: 0;
+            width: 1px;
+        }
+
+        .active {
+            border-color: darkblue;
+        }
+
+        .good {
+            background-color: green;
+        }
+
+        .okay {
+            background-color: orange;
+        }
+
+        .bad {
+            background-color: red;
+        }
+
+        .active-info {
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="active-info"></div>
+
+    <script>
+        const dataSize = 150;
+        const tbody = document.querySelector("tbody");
+        const activeInfo = document.querySelector(".active-info");
+        const seed = Math.max(0.3, Math.random());
+
+        addRow("First Contentful Paint", getData(dataSize, 0.59));
+        addRow("Start Render", getData(dataSize, 0.64));
+        addRow("DOM Content Loaded", getData(dataSize, 0.67));
+        addRow("Page Load", getData(dataSize, 0.7));
+        addRow("First Input Delay", getData(dataSize, 0.93));
+        addRow("Longest Long Task", getData(dataSize, 0.95));
+        addRow("First CPU Idle", getData(dataSize, 0.95));
+        addRow("Page Not Abandoned", getData(dataSize, 0.98));
+        addRow("Total CPU Time", getData(dataSize, 1));
+
+        tbody.addEventListener("mouseover", (e) => {
+            if (e.target.classList.contains("value")) {
+                [...document.querySelectorAll(".active")].forEach((td) => {
+                    td.classList.remove("active");
+                });
+
+                const index = [...e.target.parentNode.childNodes].indexOf(e.target);
+
+                [...document.querySelectorAll("tr")].forEach((tr) => {
+                    tr.childNodes[index].classList.add("active");
+                });
+
+                updateActiveInfo();
+            }
+        });
+
+        function updateActiveInfo() {
+            activeInfo.innerHTML = "";
+            const activeCells = document.querySelectorAll(".active");
+            let happiness = "happy";
+            let happinessClass = "good";
+
+            [...activeCells].forEach((td) => {
+                const metric = td.parentNode.firstChild.innerText;
+                const value = Number(td.innerText);
+                let label = "good";
+
+                if (value === 0) {
+                    label = "okay";
+                    happiness = "okay";
+                    happinessClass = "okay";
+                } else if (value === -1) {
+                    label = "bad";
+                    happiness = "unhappy";
+                    happinessClass = "bad";
+                }
+
+                activeInfo.innerHTML += `${metric}: <span class="${label}">${label}</span><br>`;
+            });
+
+            activeInfo.innerHTML = `
+                <b>This page view is
+                <span class="${happinessClass}">${happiness}</span></b>
+                <br><br>${activeInfo.innerHTML}
+            `;
+        }
+
+        /**
+         * Returns an array of "happiness" values. 1 = "happy", 0 = "okay", -1 = "unhappy". A lower
+         * skew will result in more "happy" values.
+         */
+        function getData(length, skew) {
+            const middle = 1 - (seed * skew);
+
+            const arr = Array.from({ length }, (v, k) => {
+                if (k < length * skew) {
+                    return 1;
+                } else if (k < length * middle) {
+                    return 0;
+                }
+
+                return -1;
+            });
+
+            shuffle(arr);
+
+            return arr;
+        }
+
+        function addRow(metric, data) {
+            const tr = document.createElement("tr");
+
+            addCell(tr, metric);
+
+            data.forEach((value) => addCell(tr, value));
+
+            tbody.appendChild(tr);
+        }
+
+        function addCell(tr, value) {
+            const td = document.createElement("td");
+            td.innerText = value;
+
+            if (value === 1) {
+                td.className = "good value";
+            } else if (value === 0) {
+                td.className = "okay value";
+            } else if (value === -1) {
+                td.className = "bad value";
+            } else {
+                td.className = "label";
+            }
+
+            tr.appendChild(td);
+        }
+
+        function shuffle(array) {
+            let currentIndex = array.length,  randomIndex;
+
+            // While there remain elements to shuffle...
+            while (currentIndex != 0) {
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                // And swap it with the current element.
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex],
+                    array[currentIndex]
+                ];
+            }
+
+            return array;
+        }
+    </script>
+</body>
+</html>
