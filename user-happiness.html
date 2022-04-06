@@ -26,7 +26,7 @@
             color: transparent;
             font-size: 0;
             padding: 0;
-            width: 1px;
+            width: 0;
         }
 
         .active {
@@ -60,7 +60,7 @@
     <div class="active-info"></div>
 
     <script>
-        const dataSize = 150;
+        const dataSize = 200;
         const tbody = document.querySelector("tbody");
         const activeInfo = document.querySelector(".active-info");
         const seed = Math.max(0.3, Math.random());
