@@ -60,6 +60,10 @@
     <div class="active-info"></div>
 
     <script>
+        const HAPPY = 1;
+        const OKAY = 0;
+        const UNHAPPY = -10;
+
         const dataSize = 200;
         const tbody = document.querySelector("tbody");
         const activeInfo = document.querySelector(".active-info");
@@ -120,11 +124,11 @@
                 const value = Number(td.innerText);
                 let label = "good";
 
-                if (value === 0) {
+                if (value === OKAY && happiness !== "unhappy") {
                     label = "okay";
                     happiness = "okay";
                     happinessClass = "okay";
-                } else if (value === -1) {
+                } else if (value === UNHAPPY) {
                     label = "bad";
                     happiness = "unhappy";
                     happinessClass = "bad";
@@ -149,16 +153,16 @@
          * skew will result in more "happy" values.
          */
         function getData(length, skew) {
-            const middle = 1 - (Math.min(0.2, seed) * skew);
+            const middle = 1 - (Math.min(0.25, seed) * skew);
 
             const arr = Array.from({ length }, (v, k) => {
                 if (k < length * skew) {
-                    return 1;
+                    return HAPPY;
                 } else if (k < length * middle) {
-                    return 0;
+                    return OKAY;
                 }
 
-                return -1;
+                return UNHAPPY;
             });
 
             shuffle(arr);
@@ -180,11 +184,11 @@
             const td = document.createElement("td");
             td.innerText = value;
 
-            if (value === 1) {
+            if (value === HAPPY) {
                 td.className = "good value";
-            } else if (value === 0) {
+            } else if (value === OKAY) {
                 td.className = "okay value";
-            } else if (value === -1) {
+            } else if (value === UNHAPPY) {
                 td.className = "bad value";
             } else {
                 td.className = "label";
