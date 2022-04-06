@@ -65,15 +65,33 @@
         const activeInfo = document.querySelector(".active-info");
         const seed = Math.max(0.3, Math.random());
 
-        addRow("First Contentful Paint", getData(dataSize, 0.54));
-        addRow("Start Render", getData(dataSize, 0.59));
-        addRow("DOM Content Loaded", getData(dataSize, 0.72));
-        addRow("Page Load", getData(dataSize, 0.65));
-        addRow("First Input Delay", getData(dataSize, 0.88));
-        addRow("Longest Long Task", getData(dataSize, 0.9));
-        addRow("First CPU Idle", getData(dataSize, 0.9));
-        addRow("Page Not Abandoned", getData(dataSize, 0.93));
-        addRow("Total CPU Time", getData(dataSize, 0.95));
+        const fcp = getData(dataSize, 0.54);
+        const sr = getData(dataSize, 0.59);
+        const dcl = getData(dataSize, 0.72);
+        const pl = getData(dataSize, 0.65);
+        const fid = getData(dataSize, 0.88);
+        const llt = getData(dataSize, 0.9);
+        const fci = getData(dataSize, 0.9);
+        const pna = getData(dataSize, 0.93);
+        const tct = getData(dataSize, 0.95);
+
+        let pvs = [];
+
+        for (let i = 0; i < dataSize; i++) {
+            pvs.push([fcp[i], sr[i], dcl[i], pl[i], fid[i], llt[i], fci[i], pna[i], tct[i]]);
+        }
+
+        pvs = pvs.sort((a, b) => sum(a) - sum(b));
+
+        addRow("First Contentful Paint", pvs.map((pv) => pv[0]));
+        addRow("Start Render", pvs.map((pv) => pv[1]));
+        addRow("DOM Content Loaded", pvs.map((pv) => pv[2]));
+        addRow("Page Load", pvs.map((pv) => pv[3]));
+        addRow("First Input Delay", pvs.map((pv) => pv[4]));
+        addRow("Longest Long Task", pvs.map((pv) => pv[5]));
+        addRow("First CPU Idle", pvs.map((pv) => pv[6]));
+        addRow("Page Not Abandoned", pvs.map((pv) => pv[7]));
+        addRow("Total CPU Time", pvs.map((pv) => pv[8]));
 
         tbody.addEventListener("mouseover", (e) => {
             if (e.target.classList.contains("value")) {
@@ -120,6 +138,10 @@
                 <span class="${happinessClass}">${happiness}</span></b>
                 <br><br>${activeInfo.innerHTML}
             `;
+        }
+
+        function sum(arr) {
+            return arr.reduce((acc, x) => acc + x, 0);
         }
 
         /**
