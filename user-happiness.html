@@ -67,17 +67,16 @@
         const dataSize = 200;
         const tbody = document.querySelector("tbody");
         const activeInfo = document.querySelector(".active-info");
-        const seed = Math.max(0.3, Math.random());
 
-        const fcp = getData(dataSize, 0.54);
-        const sr = getData(dataSize, 0.59);
-        const dcl = getData(dataSize, 0.72);
-        const pl = getData(dataSize, 0.65);
-        const fid = getData(dataSize, 0.88);
-        const llt = getData(dataSize, 0.9);
-        const fci = getData(dataSize, 0.9);
-        const pna = getData(dataSize, 0.93);
-        const tct = getData(dataSize, 0.95);
+        const fcp = getData(dataSize, 0.66, 0.14);
+        const sr = getData(dataSize, 0.71, 0.08);
+        const dcl = getData(dataSize, 0.73, 0.02);
+        const pl = getData(dataSize, 0.86, 0.02);
+        const fid = getData(dataSize, 0.88, 0.01);
+        const llt = getData(dataSize, 0.91, 0.01);
+        const fci = getData(dataSize, 0.94, 0.02);
+        const pna = getData(dataSize, 0.95, 0.02);
+        const tct = getData(dataSize, 0.97, 0.01);
 
         let pvs = [];
 
@@ -124,10 +123,13 @@
                 const value = Number(td.innerText);
                 let label = "good";
 
-                if (value === OKAY && happiness !== "unhappy") {
+                if (value === OKAY) {
                     label = "okay";
-                    happiness = "okay";
-                    happinessClass = "okay";
+
+                    if (happiness !== "unhappy") {
+                        happiness = "okay";
+                        happinessClass = "okay";
+                    }
                 } else if (value === UNHAPPY) {
                     label = "bad";
                     happiness = "unhappy";
@@ -148,17 +150,11 @@
             return arr.reduce((acc, x) => acc + x, 0);
         }
 
-        /**
-         * Returns an array of "happiness" values. 1 = "happy", 0 = "okay", -1 = "unhappy". A lower
-         * skew will result in more "happy" values.
-         */
-        function getData(length, skew) {
-            const middle = 1 - (Math.min(0.25, seed) * skew);
-
+        function getData(length, goodPct, badPct) {
             const arr = Array.from({ length }, (v, k) => {
-                if (k < length * skew) {
+                if (k <= length * goodPct) {
                     return HAPPY;
-                } else if (k < length * middle) {
+                } else if (k <= length * (1 - badPct)) {
                     return OKAY;
                 }
 
@@ -198,7 +194,7 @@
         }
 
         function shuffle(array) {
-            let currentIndex = array.length,  randomIndex;
+            let currentIndex = array.length, randomIndex;
 
             // While there remain elements to shuffle...
             while (currentIndex != 0) {
