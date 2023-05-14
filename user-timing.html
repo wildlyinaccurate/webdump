@@ -6,16 +6,17 @@
 </head>
 <body>
 	<script>
-		performance.mark('foo::bar')
-		performance.mark('foo/bar')
-		performance.mark('foo "bar"')
-		performance.mark('foo <bar>')
-		performance.mark('foo bar />')
-		performance.mark('>>/><!-- foo bar -->')
+		performance.mark('foo::bar');
+		performance.mark('foo/bar');
+		performance.mark('foo "bar"');
+		performance.mark('foo <bar>');
+		performance.mark('foo bar />');
+		performance.mark('>>/><!-- foo bar -->');
+		performance.measure('$foo["bar"]', 'foo::bar');
 
-		p = document.createElement('p')
-		p.innerText = 'henlo'
-		document.body.appendChild(p)
+		p = document.createElement('p');
+		p.innerText = 'henlo';
+		document.body.appendChild(p);
 	</script>
 </body>
 </html>
