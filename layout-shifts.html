@@ -45,6 +45,10 @@
         <button id="insert-heading">Insert a heading</button>
         <button id="insert-image">Insert an image</button>
 
+        <p>
+            <b>Document CLS: <span id="dcls"></span></b>
+        </p>
+
         <h3>Layout shift sources</h3>
         <ul id="layout-shift-sources"></ul>
     </div>
@@ -73,6 +77,12 @@
     <div>
 
     <script>
+        const shifts = [];
+        const shiftSources = {};
+        let sessionValue = 0;
+        let sessionEntries = [];
+        let maximumSessionValue = 0;
+
         function renderDebugBoxes(sources) {
             const sourcesContainer = document.querySelector("#layout-shift-sources");
             sourcesContainer.innerHTML = "";
@@ -84,6 +94,8 @@
                 sourcesContainer.appendChild(li);
             });
 
+            document.querySelector("#dcls").textContent = maximumSessionValue.toFixed(3);
+
             const shiftsContainer = document.querySelector("#all-layout-shifts");
             shiftsContainer.innerHTML = "";
             Object.entries(shifts).forEach(([index, shift]) => {
@@ -94,10 +106,28 @@
             });
         }
 
-        const shifts = [];
-        const shiftSources = {};
         const po = new PerformanceObserver((list) => {
             list.getEntries().forEach((entry) => {
+                if (!entry.hadRecentInput) {
+                    // Calculate the actual windowed CLS for the document
+                    const firstEntry = sessionEntries[0];
+                    const latestEntry = sessionEntries[sessionEntries.length - 1];
+
+                    if (
+                    sessionEntries.length &&
+                    (entry.startTime - latestEntry.startTime >= 1000 ||
+                        entry.startTime - firstEntry.startTime >= 5000)
+                    ) {
+                    sessionValue = entry.value;
+                    sessionEntries = [entry];
+                    } else {
+                    sessionValue += entry.value;
+                    sessionEntries.push(entry);
+                    }
+
+                    maximumSessionValue = Math.max(maximumSessionValue, sessionValue);
+                }
+
                 if (entry.value < 0.002) {
                     // Ignore really small entries
                     return;
