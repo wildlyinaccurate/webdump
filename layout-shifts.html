@@ -17,10 +17,10 @@
         }
 
         .debug {
-            background: #eee;
+            background: rgba(233, 233, 233, 0.9);
             border: 1px solid #444;
             height: 200px;
-            min-width: 400px;
+            width: 600px;
             overflow-y: scroll;
             padding: 1rem;
             position: fixed;
@@ -53,11 +53,21 @@
 
         <p>
             <b>Document CLS: <span id="dcls"></span></b>
+            <br>
+            <b>Number of layout windows: <span id="window-number">1</span> (started at <span id="window-start-time">0ms</span>)</b>
         </p>
 
-        <h3>Layout shift sources</h3>
-        <ul id="layout-shift-sources"></ul>
-    </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h3>Windowed shift sources</h3>
+                <ul id="windowed-shift-sources"></ul>
+            </div>
+
+            <div>
+                <h3>All shift sources</h3>
+                <ul id="all-shift-sources"></ul>
+            </div>
+        </div>
 
     <div class="debug debug--bottom" id="shifts-box">
         <h3>All layout shifts</h3>
@@ -81,28 +91,37 @@
     <div>
 
     <script>
-        const shifts = [];
-        const shiftSources = {};
+        let allShifts = [];
+        let shiftSources = {};
+        let windowedShiftSources = {};
+        let windows = 1;
         let sessionValue = 0;
         let sessionEntries = [];
         let maximumSessionValue = 0;
 
-        function renderDebugBoxes(sources) {
-            const sourcesContainer = document.querySelector("#layout-shift-sources");
-            sourcesContainer.innerHTML = "";
+        function renderSources(sources, shifts, container) {
+            container.innerHTML = "";
 
             Object.entries(sources).sort((a, b) => b[1].score - a[1].score).forEach(([key, value]) => {
                 const li = document.createElement("li");
                 const pctOfShifts = Math.round((value.count / shifts.length) * 100);
-                li.innerHTML = `<b>${value.name}</b> | ${pctOfShifts}% of shifts | ${value.score.toFixed(3)}`;
-                sourcesContainer.appendChild(li);
+                li.innerHTML = `<b>${value.name}</b> | ${value.count} shifts (${pctOfShifts}%) | ${value.score.toFixed(3)}`;
+                container.appendChild(li);
             });
+        }
 
+        function renderDebugBoxes() {
+            renderSources(windowedShiftSources, sessionEntries, document.querySelector("#windowed-shift-sources"));
+            renderSources(shiftSources, allShifts, document.querySelector("#all-shift-sources"));
+
+            const windowStartTime = new Intl.NumberFormat().format(Math.round(sessionEntries[0].startTime));
             document.querySelector("#dcls").textContent = maximumSessionValue.toFixed(3);
+            document.querySelector("#window-number").textContent = windows;
+            document.querySelector("#window-start-time").textContent = `${windowStartTime}ms`;
 
             const shiftsContainer = document.querySelector("#all-layout-shifts");
             shiftsContainer.innerHTML = "";
-            Object.entries(shifts).forEach(([index, shift]) => {
+            Object.entries(allShifts).forEach(([index, shift]) => {
                 const li = document.createElement("li");
                 const startTime = new Intl.NumberFormat().format(Math.round(shift.startTime));
                 li.innerHTML = `<b>${startTime}ms</b> | ${shift.value.toFixed(3)} (<small>${shift.sources.map((source) => source.node.id).join(", ")}</small>)`;
@@ -116,16 +135,15 @@
                 const firstEntry = sessionEntries[0];
                 const latestEntry = sessionEntries[sessionEntries.length - 1];
 
-                if (
-                sessionEntries.length &&
-                (entry.startTime - latestEntry.startTime >= 1000 ||
-                    entry.startTime - firstEntry.startTime >= 5000)
-                ) {
-                sessionValue = entry.value;
-                sessionEntries = [entry];
+                if (sessionEntries.length && (entry.startTime - latestEntry.startTime >= 1000 || entry.startTime - firstEntry.startTime >= 5000)) {
+                    // New window
+                    sessionValue = entry.value;
+                    sessionEntries = [entry];
+                    windows++;
+                    windowedShiftSources = {};
                 } else {
-                sessionValue += entry.value;
-                sessionEntries.push(entry);
+                    sessionValue += entry.value;
+                    sessionEntries.push(entry);
                 }
 
                 maximumSessionValue = Math.max(maximumSessionValue, sessionValue);
@@ -135,9 +153,10 @@
                     return;
                 }
 
-                shifts.push(entry);
+                allShifts.push(entry);
 
                 entry.sources.forEach((source) => {
+                    // For all shifts
                     if (!shiftSources[source.node.id]) {
                         shiftSources[source.node.id] = {
                             name: source.node.id,
@@ -148,10 +167,22 @@
 
                     shiftSources[source.node.id].count++;
                     shiftSources[source.node.id].score += entry.value;
+
+                    // For the current shift window
+                    if (!windowedShiftSources[source.node.id]) {
+                        windowedShiftSources[source.node.id] = {
+                            name: source.node.id,
+                            count: 0,
+                            score: 0,
+                        };
+                    }
+
+                    windowedShiftSources[source.node.id].count++;
+                    windowedShiftSources[source.node.id].score += entry.value;
                 });
             });
 
-            renderDebugBoxes(shiftSources);
+            renderDebugBoxes();
         });
         po.observe({ type: "layout-shift", buffered: true });
 
