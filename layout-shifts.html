@@ -1,0 +1,151 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout Shift Generator</title>
+    <style>
+        .container {
+            width: 80%;
+            max-width: 1400px;
+            margin: 40px auto;
+        }
+
+        .grid {
+            grid-template-columns: repeat(3, 1fr);
+            display: grid;
+            gap: 20px;
+        }
+
+        .debug {
+            background: #eee;
+            border: 1px solid #444;
+            height: 200px;
+            min-width: 400px;
+            overflow-y: scroll;
+            padding: 1rem;
+            position: fixed;
+            right: 20px;
+        }
+
+        .debug--top {
+            top: 20px;
+        }
+
+        .debug--bottom {
+            bottom: 20px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug debug--top" id="shift-sources-box">
+        <button id="insert-heading">Insert a heading</button>
+        <button id="insert-image">Insert an image</button>
+
+        <h3>Layout shift sources</h3>
+        <ul id="layout-shift-sources"></ul>
+    </div>
+
+    <div class="debug debug--bottom" id="shifts-box">
+        <h3>All layout shifts</h3>
+        <ul id="all-layout-shifts"></div>
+    </div>
+
+    <div class="container">
+        <div id="new-shift-container"></div>
+
+        <p id="top-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+        <div id="images" class="grid">
+            <img>
+            <img>
+        </div>
+
+        <p id="bottom-text-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+
+        <div id="blue-square" style="display: inline-block; width: 100px; height: 100px; background: blue;"></div>
+        <div id="red-square" style="display: inline-block; width: 100px; height: 100px; background: red;"></div>
+
+        <p id="bottom-text-2">Aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <div>
+
+    <script>
+        function renderDebugBoxes(sources) {
+            const sourcesContainer = document.querySelector("#layout-shift-sources");
+            sourcesContainer.innerHTML = "";
+
+            Object.entries(sources).sort((a, b) => b[1].score - a[1].score).forEach(([key, value]) => {
+                const li = document.createElement("li");
+                const pctOfShifts = Math.round((value.count / shifts.length) * 100);
+                li.innerHTML = `<b>${value.name}</b> | ${pctOfShifts}% of shifts | ${value.score.toFixed(3)}`;
+                sourcesContainer.appendChild(li);
+            });
+
+            const shiftsContainer = document.querySelector("#all-layout-shifts");
+            shiftsContainer.innerHTML = "";
+            Object.entries(shifts).forEach(([index, shift]) => {
+                const li = document.createElement("li");
+                const startTime = new Intl.NumberFormat().format(Math.round(shift.startTime));
+                li.innerHTML = `<b>${startTime}ms</b> | ${shift.value.toFixed(3)} (<small>${shift.sources.map((source) => source.node.id).join(", ")}</small>)`;
+                shiftsContainer.appendChild(li);
+            });
+        }
+
+        const shifts = [];
+        const shiftSources = {};
+        const po = new PerformanceObserver((list) => {
+            list.getEntries().forEach((entry) => {
+                if (entry.value < 0.002) {
+                    // Ignore really small entries
+                    return;
+                }
+
+                shifts.push(entry);
+
+                entry.sources.forEach((source) => {
+                    if (!shiftSources[source.node.id]) {
+                        shiftSources[source.node.id] = {
+                            name: source.node.id,
+                            count: 0,
+                            score: 0,
+                        };
+                    }
+
+                    shiftSources[source.node.id].count++;
+                    shiftSources[source.node.id].score += entry.value;
+                });
+            });
+
+            renderDebugBoxes(shiftSources);
+        });
+
+        po.observe({ type: "layout-shift", buffered: true });
+
+        document.querySelectorAll("img").forEach((image, index) => {
+            setTimeout(() => {
+                image.id = `image-${index}`;
+                image.src = `dogs.png?${index}`;
+            }, 300 * (index + 1));
+        });
+
+        let i = 0;
+
+        document.querySelector("#insert-heading").addEventListener("click", () => {
+            newShift = document.createElement("h3");
+            newShift.id = `heading-${i}`;
+            newShift.textContent = "New layout shift!";
+            document.querySelector("#new-shift-container").appendChild(newShift);
+        });
+
+        document.querySelector("#insert-image").addEventListener("click", () => {
+            newShift = document.createElement("img");
+            newShift.id = `new-image-${i}`;
+            newShift.src = "dogs.png";
+            document.querySelector("#images").appendChild(newShift);
+        });
+    </script>
+</body>
+</html>
