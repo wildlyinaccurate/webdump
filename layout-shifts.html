@@ -35,6 +35,11 @@
             bottom: 20px;
         }
 
+        h2, h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
         ul {
             padding-left: 20px;
         }
@@ -44,6 +49,7 @@
     <div class="debug debug--top" id="shift-sources-box">
         <button id="insert-heading">Insert a heading</button>
         <button id="insert-image">Insert an image</button>
+        <button id="insert-lots">Insert a bunch of shit</button>
 
         <p>
             <b>Document CLS: <span id="dcls"></span></b>
@@ -64,8 +70,6 @@
         <p id="top-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 
         <div id="images" class="grid">
-            <img>
-            <img>
         </div>
 
         <p id="bottom-text-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
@@ -108,25 +112,23 @@
 
         const po = new PerformanceObserver((list) => {
             list.getEntries().forEach((entry) => {
-                if (!entry.hadRecentInput) {
-                    // Calculate the actual windowed CLS for the document
-                    const firstEntry = sessionEntries[0];
-                    const latestEntry = sessionEntries[sessionEntries.length - 1];
+                // Calculate the actual windowed CLS for the document
+                const firstEntry = sessionEntries[0];
+                const latestEntry = sessionEntries[sessionEntries.length - 1];
 
-                    if (
-                    sessionEntries.length &&
-                    (entry.startTime - latestEntry.startTime >= 1000 ||
-                        entry.startTime - firstEntry.startTime >= 5000)
-                    ) {
-                    sessionValue = entry.value;
-                    sessionEntries = [entry];
-                    } else {
-                    sessionValue += entry.value;
-                    sessionEntries.push(entry);
-                    }
-
-                    maximumSessionValue = Math.max(maximumSessionValue, sessionValue);
+                if (
+                sessionEntries.length &&
+                (entry.startTime - latestEntry.startTime >= 1000 ||
+                    entry.startTime - firstEntry.startTime >= 5000)
+                ) {
+                sessionValue = entry.value;
+                sessionEntries = [entry];
+                } else {
+                sessionValue += entry.value;
+                sessionEntries.push(entry);
                 }
+
+                maximumSessionValue = Math.max(maximumSessionValue, sessionValue);
 
                 if (entry.value < 0.002) {
                     // Ignore really small entries
@@ -151,31 +153,38 @@
 
             renderDebugBoxes(shiftSources);
         });
-
         po.observe({ type: "layout-shift", buffered: true });
-
-        document.querySelectorAll("img").forEach((image, index) => {
-            setTimeout(() => {
-                image.id = `image-${index}`;
-                image.src = `dogs.png?${index}`;
-            }, 300 * (index + 1));
-        });
 
         let i = 0;
 
-        document.querySelector("#insert-heading").addEventListener("click", () => {
+        const insertHeading = () => {
+            i++;
             newShift = document.createElement("h3");
             newShift.id = `heading-${i}`;
             newShift.textContent = "New layout shift!";
             document.querySelector("#new-shift-container").appendChild(newShift);
-        });
+        };
 
-        document.querySelector("#insert-image").addEventListener("click", () => {
+        const insertImage = () => {
             newShift = document.createElement("img");
             newShift.id = `new-image-${i}`;
             newShift.src = "dogs.png";
             document.querySelector("#images").appendChild(newShift);
-        });
+        };
+
+        const goCrazy = () => {
+            for (let i = 0; i < Math.random() * 30; i++) {
+                if (Math.random() > 0.5) {
+                    setTimeout(insertHeading, Math.random() * 100);
+                } else {
+                    setTimeout(insertImage, Math.random() * 100);
+                }
+            }
+        };
+
+        document.querySelector("#insert-heading").addEventListener("click", insertHeading);
+        document.querySelector("#insert-image").addEventListener("click", insertImage);
+        document.querySelector("#insert-lots").addEventListener("click", goCrazy);
     </script>
 </body>
 </html>
